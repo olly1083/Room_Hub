@@ -207,7 +207,11 @@
 
 <script>
 /* ---------------- STATE ---------------- */
-let currentUser = null; // {username, role}
+let currentUser = JSON.parse(
+  localStorage.getItem(
+    "roomhub_current_user"
+  ) || "null"
+);
 let view = 'home';
 let viewParam = null;
 
@@ -426,7 +430,16 @@ async function loginUser(username, password){
   if(ph !== u.passwordHash) return {err:'Incorrect password.'};
   return {ok:true, user:u};
 }
-function logout(){ currentUser=null; go('home'); }
+function logout(){
+
+  currentUser = null;
+
+  localStorage.removeItem(
+    "roomhub_current_user"
+  );
+
+  go("home");
+}
 
 /* ---------------- RENDER ROOT ---------------- */
 async function render(){
@@ -519,7 +532,16 @@ async function submitLogin(){
   const msg = document.getElementById('li-msg');
   const res = await loginUser(u,p);
   if(res.err){ msg.className='msg show err'; msg.textContent = res.err; return; }
-  currentUser = {username: res.user.username, role: res.user.role};
+  currentUser = {
+    username: res.user.username,
+    role: res.user.role
+  };
+  
+  localStorage.setItem(
+    "roomhub_current_user",
+    JSON.stringify(currentUser)
+  );
+  
   go('feed');
 }
 function renderRegister(){
@@ -543,7 +565,16 @@ async function submitRegister(){
   const msg = document.getElementById('rg-msg');
   const res = await registerUser(u,p);
   if(res.err){ msg.className='msg show err'; msg.textContent = res.err; return; }
-  currentUser = {username: res.user.username, role: res.user.role};
+  currentUser = {
+    username: res.user.username,
+    role: res.user.role
+  };
+  
+  localStorage.setItem(
+    "roomhub_current_user",
+    JSON.stringify(currentUser)
+  );
+  
   go('feed');
 }
 
