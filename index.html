@@ -217,54 +217,116 @@ let viewParam = null;
 ---------------------------------------------------- */
 const API_BASE = 'https://cold-tooth-93a7.oawwillis.workers.dev';
 
-async function apiRequest(path, options = {}){
-  const res = await fetch(API_BASE + path, {
-    headers: {'Content-Type':'application/json', ...(options.headers || {})},
-    ...options
-  });
-  const data = await res.json().catch(() => ({}));
-  if(!res.ok) throw new Error(data.error || `API error ${res.status}`);
+async function apiRequest(path, options = {}) {
+  const response = await fetch(
+    API_BASE + path,
+    {
+      ...options,
+
+      headers: {
+        "Content-Type": "application/json",
+        ...(options.headers || {})
+      }
+    }
+  );
+
+  const data = await response.json().catch(() => null);
+
+  if (!response.ok) {
+    throw new Error(
+      data?.error || `API error ${response.status}`
+    );
+  }
+
   return data;
 }
 
-async function sget(key){
-  try{
-    const data = await apiRequest('/data/' + encodeURIComponent(key));
+async function sget(key) {
+  try {
+    const data = await apiRequest(
+      "/data/" + encodeURIComponent(key)
+    );
+
     return data.value ?? null;
-  }catch(e){
-    if(e.message.includes('404')) return null;
-    console.error('storage get failed', e);
+
+  } catch (error) {
+
+    if (error.message.includes("Not found")) {
+      return null;
+    }
+
+    console.error(
+      "Failed to get data:",
+      error
+    );
+
     return null;
   }
 }
 
-async function sset(key, value){
-  try{
-    return await apiRequest('/data/' + encodeURIComponent(key), {
-      method:'PUT',
-      body: JSON.stringify({value})
-    });
-  }catch(e){
-    console.error('storage set failed', e);
+async function sset(key, value) {
+  try {
+
+    return await apiRequest(
+      "/data/" + encodeURIComponent(key),
+      {
+        method: "PUT",
+
+        body: JSON.stringify({
+          value: value
+        })
+      }
+    );
+
+  } catch (error) {
+
+    console.error(
+      "Failed to save data:",
+      error
+    );
+
     return null;
   }
 }
 
-async function sdel(key){
-  try{
-    return await apiRequest('/data/' + encodeURIComponent(key), {method:'DELETE'});
-  }catch(e){
-    console.error('storage delete failed', e);
+async function sdel(key) {
+  try {
+
+    return await apiRequest(
+      "/data/" + encodeURIComponent(key),
+      {
+        method: "DELETE"
+      }
+    );
+
+  } catch (error) {
+
+    console.error(
+      "Failed to delete data:",
+      error
+    );
+
     return null;
   }
 }
 
-async function slist(prefix){
-  try{
-    const data = await apiRequest('/list?prefix=' + encodeURIComponent(prefix));
+async function slist(prefix) {
+  try {
+
+    const data = await apiRequest(
+      "/list?prefix=" +
+      encodeURIComponent(prefix)
+    );
+
     return data.keys || [];
-  }catch(e){
-    console.error('storage list failed', e);
+
+  } catch (error) {
+
+    console.error(
+      "Failed to list data:",
+      error
+    );
+
     return [];
   }
 }
