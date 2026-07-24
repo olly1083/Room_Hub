@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RoomHub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #0a0d12;
+    --bg-panel: #10151d;
+    --bg-panel-raised: #161c26;
+    --line: #232b38;
+    --cyan: #61FF79;
+    --magenta: #61FF79;
+    --amber: #ffb84d;
+    --text: #dfe7ee;
+    --text-dim: #7f8ea1;
+    --text-dimmer: #4d5a6b;
+    --danger: #ff5c5c;
+    --ok: #4dff8f;
+    --font-display: 'Chakra Petch', sans-serif;
+    --font-body: 'IBM Plex Mono', monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(ellipse 80% 50% at 50% -10%, rgba(97,255,121,0.08), transparent),
+      radial-gradient(ellipse 60% 40% at 90% 100%, rgba(97,255,121,0.06), transparent),
+      var(--bg);
+    color:var(--text);
+    font-family:var(--font-body);
+    min-height:100vh;
+    position:relative;
+  }
+  body::before{
+    content:"";
+    position:fixed; inset:0;
+    background-image:
+      linear-gradient(rgba(97,255,121,0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(97,255,121,0.025) 1px, transparent 1px);
+    background-size: 42px 42px;
+    pointer-events:none;
+    z-index:0;
+  }
+  a{color:inherit;text-decoration:none;}
+  h1,h2,h3{font-family:var(--font-display); letter-spacing:0.02em; margin:0;}
+  ::selection{background:var(--cyan); color:#000;}
+
+  /* NAV */
+  nav{
+    position:sticky; top:0; z-index:50;
+    display:flex; align-items:center; gap:6px;
+    padding:14px 24px;
+    background:rgba(10,13,18,0.85);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line);
+    flex-wrap:wrap;
+  }
+  .logo{
+    font-family:var(--font-display); font-weight:700; font-size:22px;
+    letter-spacing:0.04em; color:var(--cyan);
+    margin-right:18px; cursor:pointer; user-select:none;
+    text-shadow:0 0 18px rgba(97,255,121,0.5);
+  }
+  .logo span{color:var(--magenta); text-shadow:0 0 18px rgba(97,255,121,0.5);}
+  .navlink{
+    padding:8px 14px; font-size:13px; letter-spacing:0.03em;
+    color:var(--text-dim); border-radius:3px; cursor:pointer;
+    border:1px solid transparent; text-transform:uppercase;
+    transition:all .15s ease;
+  }
+  .navlink:hover{color:var(--cyan); border-color:var(--line);}
+  .navlink.active{color:var(--cyan); background:rgba(97,255,121,0.08); border-color:rgba(97,255,121,0.3);}
+  .nav-spacer{flex:1;}
+  .role-pill{
+    font-size:10px; padding:3px 9px; border-radius:20px; text-transform:uppercase;
+    letter-spacing:0.08em; font-weight:600; border:1px solid;
+  }
+  .role-user{color:var(--text-dim); border-color:var(--line);}
+  .role-playtester{color:var(--ok); border-color:var(--ok);}
+  .role-dev{color:var(--cyan); border-color:var(--cyan);}
+  .role-mod{color:var(--amber); border-color:var(--amber);}
+  .role-admin{color:var(--magenta); border-color:var(--magenta);}
+
+  main{
+    position:relative; z-index:1;
+    max-width:880px; margin:0 auto; padding:40px 24px 100px;
+  }
+  .page{animation:fadein .35s ease;}
+  @keyframes fadein{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);}}
+
+  .hero{
+    text-align:center; padding:60px 20px 40px; position:relative;
+  }
+  .hero h1{
+    font-size:clamp(38px,7vw,64px); font-weight:700;
+    background:linear-gradient(120deg,var(--cyan),var(--magenta));
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+    text-shadow:none;
+  }
+  .hero p{color:var(--text-dim); font-size:15px; max-width:520px; margin:16px auto 0; line-height:1.7;}
+  .hero .tagline{
+    font-size:11px; letter-spacing:0.3em; color:var(--text-dimmer);
+    text-transform:uppercase; margin-bottom:14px;
+  }
+
+  .btn{
+    font-family:var(--font-body); font-size:13px; font-weight:600;
+    padding:11px 22px; border-radius:3px; border:1px solid var(--cyan);
+    background:transparent; color:var(--cyan); cursor:pointer;
+    text-transform:uppercase; letter-spacing:0.05em;
+    transition:all .15s ease;
+  }
+  .btn:hover{background:var(--cyan); color:#000; box-shadow:0 0 20px rgba(97,255,121,0.4);}
+  .btn.magenta{border-color:var(--magenta); color:var(--magenta);}
+  .btn.magenta:hover{background:var(--magenta); color:#000; box-shadow:0 0 20px rgba(97,255,121,0.4);}
+  .btn.ghost{border-color:var(--line); color:var(--text-dim);}
+  .btn.ghost:hover{border-color:var(--text-dim); color:var(--text); box-shadow:none; background:transparent;}
+  .btn.small{padding:6px 12px; font-size:11px;}
+  .btn.danger{border-color:var(--danger); color:var(--danger);}
+  .btn.danger:hover{background:var(--danger); color:#000; box-shadow:0 0 20px rgba(255,92,92,0.4);}
+  .btn:disabled{opacity:0.35; cursor:not-allowed;}
+  .btn-row{display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-top:26px;}
+
+  .panel{
+    background:var(--bg-panel);
+    border:1px solid var(--line);
+    border-radius:6px;
+    padding:26px;
+    margin-bottom:20px;
+  }
+  .panel-title{
+    font-family:var(--font-display); font-size:12px; letter-spacing:0.15em;
+    text-transform:uppercase; color:var(--text-dimmer); margin-bottom:18px;
+    display:flex; align-items:center; gap:10px;
+  }
+  .panel-title::after{content:""; flex:1; height:1px; background:var(--line);}
+
+  label{display:block; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-dim); margin:14px 0 6px;}
+  label:first-child{margin-top:0;}
+  input[type=text],input[type=password],textarea,select{
+    width:100%; background:var(--bg-panel-raised); border:1px solid var(--line);
+    color:var(--text); padding:11px 12px; border-radius:3px; font-family:var(--font-body);
+    font-size:14px; outline:none; transition:border-color .15s;
+  }
+  input:focus,textarea:focus,select:focus{border-color:var(--cyan);}
+  textarea{resize:vertical; min-height:90px; line-height:1.5;}
+  .form-narrow{max-width:400px; margin:0 auto;}
+  .msg{font-size:13px; padding:10px 14px; border-radius:3px; margin-top:14px; display:none;}
+  .msg.show{display:block;}
+  .msg.err{background:rgba(255,92,92,0.1); color:var(--danger); border:1px solid rgba(255,92,92,0.3);}
+  .msg.ok{background:rgba(77,255,143,0.1); color:var(--ok); border:1px solid rgba(77,255,143,0.3);}
+  .switcher{text-align:center; margin-top:18px; font-size:13px; color:var(--text-dim);}
+  .switcher a{color:var(--cyan); cursor:pointer;}
+  .switcher a:hover{text-decoration:underline;}
+
+  .post{
+    border:1px solid var(--line); border-radius:6px; padding:20px;
+    margin-bottom:14px; background:var(--bg-panel); cursor:pointer;
+    transition:border-color .15s, transform .15s;
+  }
+  .post:hover{border-color:var(--cyan); transform:translateX(2px);}
+  .post-meta{display:flex; align-items:center; gap:10px; margin-bottom:10px; font-size:11px; color:var(--text-dimmer); flex-wrap:wrap;}
+  .cat-tag{
+    font-size:10px; padding:2px 8px; border-radius:20px; text-transform:uppercase;
+    letter-spacing:0.06em; border:1px solid var(--line); color:var(--text-dim);
+  }
+  .cat-announcement{border-color:var(--magenta); color:var(--magenta);}
+  .cat-devlog{border-color:var(--cyan); color:var(--cyan);}
+  .cat-general{border-color:var(--amber); color:var(--amber);}
+  .post h3{font-size:19px; margin-bottom:8px;}
+  .post-body{color:var(--text-dim); font-size:14px; line-height:1.6;}
+  .post-foot{margin-top:12px; font-size:11px; color:var(--text-dimmer); display:flex; gap:14px;}
+
+  .comment{border-left:2px solid var(--line); padding:10px 0 10px 14px; margin-top:12px;}
+  .comment-meta{font-size:11px; color:var(--text-dimmer); margin-bottom:4px;}
+  .comment-body{font-size:13.5px; color:var(--text); line-height:1.6;}
+
+  table{width:100%; border-collapse:collapse; font-size:13px;}
+  th,td{text-align:left; padding:10px 12px; border-bottom:1px solid var(--line);}
+  th{color:var(--text-dimmer); text-transform:uppercase; font-size:10px; letter-spacing:0.08em; font-weight:600;}
+  tr:hover td{background:rgba(255,255,255,0.015);}
+  .status-pending{color:var(--amber);}
+  .status-approved{color:var(--ok);}
+  .status-rejected{color:var(--danger);}
+
+  .empty{text-align:center; color:var(--text-dimmer); padding:50px 20px; font-size:13px;}
+  .back-link{display:inline-block; margin-bottom:20px; font-size:12px; color:var(--text-dim); cursor:pointer;}
+  .back-link:hover{color:var(--cyan);}
+  .tab-row{display:flex; gap:6px; margin-bottom:20px; border-bottom:1px solid var(--line); flex-wrap:wrap;}
+  .tab{padding:9px 16px; font-size:12px; text-transform:uppercase; letter-spacing:0.05em; color:var(--text-dim); cursor:pointer; border-bottom:2px solid transparent;}
+  .tab.active{color:var(--cyan); border-color:var(--cyan);}
+  .about-grid{display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:24px;}
+  @media(max-width:600px){.about-grid{grid-template-columns:1fr;}}
+  .stat-box{background:var(--bg-panel-raised); border:1px solid var(--line); border-radius:6px; padding:18px; text-align:center;}
+  .stat-num{font-family:var(--font-display); font-size:28px; color:var(--cyan);}
+  .stat-lbl{font-size:10px; color:var(--text-dimmer); text-transform:uppercase; letter-spacing:0.08em; margin-top:4px;}
+  select{appearance:none; cursor:pointer;}
+</style>
+</head>
+<body>
+<nav id="nav"></nav>
+<main id="main"></main>
+
+<script>
+/* ---------------- STATE ---------------- */
+let currentUser = null; // {username, role}
+let view = 'home';
+let viewParam = null;
+
+/* ---------------- GITHUB STORAGE ----------------
+   The browser talks to a Cloudflare Worker. The Worker keeps the GitHub
+   token secret and reads/writes JSON files in the Room_Hub repository.
+---------------------------------------------------- */
+const API_BASE = 'https://YOUR-WORKER-NAME.YOUR-SUBDOMAIN.workers.dev';
+
+async function apiRequest(path, options = {}){
+  const res = await fetch(API_BASE + path, {
+    headers: {'Content-Type':'application/json', ...(options.headers || {})},
+    ...options
+  });
+  const data = await res.json().catch(() => ({}));
+  if(!res.ok) throw new Error(data.error || `API error ${res.status}`);
+  return data;
+}
+
+async function sget(key){
+  try{
+    const data = await apiRequest('/data/' + encodeURIComponent(key));
+    return data.value ?? null;
+  }catch(e){
+    if(e.message.includes('404')) return null;
+    console.error('storage get failed', e);
+    return null;
+  }
+}
+
+async function sset(key, value){
+  try{
+    return await apiRequest('/data/' + encodeURIComponent(key), {
+      method:'PUT',
+      body: JSON.stringify({value})
+    });
+  }catch(e){
+    console.error('storage set failed', e);
+    return null;
+  }
+}
+
+async function sdel(key){
+  try{
+    return await apiRequest('/data/' + encodeURIComponent(key), {method:'DELETE'});
+  }catch(e){
+    console.error('storage delete failed', e);
+    return null;
+  }
+}
+
+async function slist(prefix){
+  try{
+    const data = await apiRequest('/list?prefix=' + encodeURIComponent(prefix));
+    return data.keys || [];
+  }catch(e){
+    console.error('storage list failed', e);
+    return [];
+  }
+}
+
+async function hash(str){
+  const enc = new TextEncoder().encode(str);
+  const buf = await crypto.subtle.digest('SHA-256', enc);
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+function esc(s){
+  return (s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function timeAgo(ts){
+  const d = Date.now() - ts;
+  const m = Math.floor(d/60000), h=Math.floor(d/3600000), day=Math.floor(d/86400000);
+  if(m<1) return 'just now';
+  if(m<60) return m+'m ago';
+  if(h<24) return h+'h ago';
+  return day+'d ago';
+}
+
+/* ---------------- NAV / ROUTING ---------------- */
+function go(v, param=null){ view = v; viewParam = param; render(); window.scrollTo(0,0); }
+
+function renderNav(){
+  const nav = document.getElementById('nav');
+  let links = `<div class="navlink ${view==='feed'?'active':''}" onclick="go('feed')">Feed</div>
+               <div class="navlink ${view==='about'?'active':''}" onclick="go('about')">About</div>`;
+  if(currentUser){
+    links += `<div class="navlink ${view==='apply'?'active':''}" onclick="go('apply')">Apply</div>
+              <div class="navlink ${view==='settings'?'active':''}" onclick="go('settings')">Settings</div>`;
+    if(['dev','mod','admin'].includes(currentUser.role)){
+      links += `<div class="navlink ${view==='newpost'?'active':''}" onclick="go('newpost')">New Post</div>`;
+    }
+    if(currentUser.role==='admin'){
+      links += `<div class="navlink ${view==='admin'?'active':''}" onclick="go('admin')">Admin</div>`;
+    }
+  }
+  nav.innerHTML = `
+    <div class="logo" onclick="go('home')">Room<span>Hub</span></div>
+    ${links}
+    <div class="nav-spacer"></div>
+    ${currentUser
+      ? `<span class="role-pill role-${currentUser.role}">${currentUser.role}</span>
+         <div class="navlink" style="margin-left:4px;" onclick="logout()">${esc(currentUser.username)} · Logout</div>`
+      : `<div class="navlink ${view==='login'?'active':''}" onclick="go('login')">Login</div>
+         <div class="navlink" style="color:var(--cyan); border-color:var(--line);" onclick="go('register')">Register</div>`
+    }
+  `;
+}
+
+/* ---------------- AUTH ---------------- */
+async function registerUser(username, password){
+  username = username.trim();
+  if(username.length<3) return {err:'Username must be at least 3 characters.'};
+  if(password.length<4) return {err:'Password must be at least 4 characters.'};
+  const existing = await sget('user:'+username.toLowerCase());
+  if(existing) return {err:'That username is already taken.'};
+  // Only the very first account ever created becomes admin. Uses a dedicated
+  // flag (not a list-length check) so it can't accidentally re-trigger for
+  // later signups.
+  const adminClaimed = await sget('meta:admin-claimed');
+  const isFirst = !adminClaimed;
+  if(isFirst) await sset('meta:admin-claimed', true);
+  const ph = await hash(password);
+  const user = {
+    username, passwordHash: ph,
+    role: isFirst ? 'admin' : 'user',
+    bio:'', joined: Date.now()
+  };
+  await sset('user:'+username.toLowerCase(), user);
+  return {ok:true, user};
+}
+async function loginUser(username, password){
+  const u = await sget('user:'+username.trim().toLowerCase());
+  if(!u) return {err:'No account with that username.'};
+  const ph = await hash(password);
+  if(ph !== u.passwordHash) return {err:'Incorrect password.'};
+  return {ok:true, user:u};
+}
+function logout(){ currentUser=null; go('home'); }
+
+/* ---------------- RENDER ROOT ---------------- */
+async function render(){
+  renderNav();
+  const main = document.getElementById('main');
+  main.innerHTML = `<div class="empty">Loading…</div>`;
+  let html = '';
+  switch(view){
+    case 'home': html = renderHome(); break;
+    case 'about': html = renderAbout(); break;
+    case 'login': html = renderLogin(); break;
+    case 'register': html = renderRegister(); break;
+    case 'feed': html = await renderFeed(); break;
+    case 'post': html = await renderPostDetail(viewParam); break;
+    case 'newpost': html = currentUser ? renderNewPost() : renderLocked(); break;
+    case 'apply': html = currentUser ? await renderApply() : renderLocked(); break;
+    case 'settings': html = currentUser ? renderSettings() : renderLocked(); break;
+    case 'admin': html = (currentUser && currentUser.role==='admin') ? await renderAdmin() : renderLocked(); break;
+    default: html = renderHome();
+  }
+  main.innerHTML = `<div class="page">${html}</div>`;
+}
+
+function renderLocked(){
+  return `<div class="empty">🔒 You need to be logged in to view this page.<br><br>
+    <span class="btn small" onclick="go('login')" style="cursor:pointer;">Go to Login</span></div>`;
+}
+
+/* ---------------- HOME ---------------- */
+function renderHome(){
+  return `
+  <div class="hero">
+    <div class="tagline">Social · VR · PC · Community-Built</div>
+    <h1>RoomHub</h1>
+    <p>A community platform for players, playtesters, developers and moderators building
+    RoomHub together — share devlogs, apply for roles, and shape every room.</p>
+    <div class="btn-row">
+      <div class="btn" onclick="go('feed')">Browse Feed</div>
+      ${currentUser ? '' : `<div class="btn magenta" onclick="go('register')">Join RoomHub</div>`}
+    </div>
+  </div>
+  <div class="about-grid">
+    <div class="stat-box"><div class="stat-num">VR</div><div class="stat-lbl">+ Flatscreen PC</div></div>
+    <div class="stat-box"><div class="stat-num">UGC</div><div class="stat-lbl">Community Rooms</div></div>
+  </div>`;
+}
+
+/* ---------------- ABOUT ---------------- */
+function renderAbout(){
+  return `
+  <div class="panel">
+    <div class="panel-title">About RoomHub</div>
+    <p style="color:var(--text-dim); line-height:1.8; font-size:14px;">
+      RoomHub is a socal vr game witch on release will hopefully have a VR and Flatscreen mode for PC and VR players.
+    </p>
+    <p style="color:var(--text-dim); line-height:1.8; font-size:14px;">
+      This website is where people can read about the games devlopment and apply for roles like playtester and more.
+    </p>
+  </div>
+  <div class="panel">
+    <div class="panel-title">Roles</div>
+    <table>
+      <tr><td><span class="role-pill role-user">user</span></td><td>Default account. Can read posts and comment.</td></tr>
+      <tr><td><span class="role-pill role-playtester">playtester</span></td><td>Early access to test builds and give feedback.</td></tr>
+      <tr><td><span class="role-pill role-dev">dev</span></td><td>Can publish devlog posts and announcements.</td></tr>
+      <tr><td><span class="role-pill role-mod">mod</span></td><td>Can moderate posts/comments and publish announcements.</td></tr>
+      <tr><td><span class="role-pill role-admin">admin</span></td><td>Full control, including managing accounts and applications.</td></tr>
+    </table>
+  </div>`;
+}
+
+/* ---------------- LOGIN / REGISTER ---------------- */
+function renderLogin(){
+  return `
+  <div class="panel form-narrow">
+    <div class="panel-title">Login</div>
+    <label>Username</label>
+    <input type="text" id="li-user" autocomplete="username">
+    <label>Password</label>
+    <input type="password" id="li-pass" autocomplete="current-password">
+    <div class="btn-row" style="margin-top:20px;">
+      <div class="btn" style="width:100%; text-align:center;" onclick="submitLogin()">Log In</div>
+    </div>
+    <div class="msg" id="li-msg"></div>
+    <div class="switcher">No account? <a onclick="go('register')">Register here</a></div>
+  </div>`;
+}
+async function submitLogin(){
+  const u = document.getElementById('li-user').value;
+  const p = document.getElementById('li-pass').value;
+  const msg = document.getElementById('li-msg');
+  const res = await loginUser(u,p);
+  if(res.err){ msg.className='msg show err'; msg.textContent = res.err; return; }
+  currentUser = {username: res.user.username, role: res.user.role};
+  go('feed');
+}
+function renderRegister(){
+  return `
+  <div class="panel form-narrow">
+    <div class="panel-title">Create Account</div>
+    <label>Username</label>
+    <input type="text" id="rg-user" autocomplete="username">
+    <label>Password</label>
+    <input type="password" id="rg-pass" autocomplete="new-password">
+    <div class="btn-row" style="margin-top:20px;">
+      <div class="btn magenta" style="width:100%; text-align:center;" onclick="submitRegister()">Register</div>
+    </div>
+    <div class="msg" id="rg-msg"></div>
+    <div class="switcher">Already have an account? <a onclick="go('login')">Log in</a></div>
+  </div>`;
+}
+async function submitRegister(){
+  const u = document.getElementById('rg-user').value;
+  const p = document.getElementById('rg-pass').value;
+  const msg = document.getElementById('rg-msg');
+  const res = await registerUser(u,p);
+  if(res.err){ msg.className='msg show err'; msg.textContent = res.err; return; }
+  currentUser = {username: res.user.username, role: res.user.role};
+  go('feed');
+}
+
+/* ---------------- FEED / POSTS ---------------- */
+async function renderFeed(){
+  const ids = await slist('post:');
+  if(!ids.length) return `<div class="panel-title">Feed</div><div class="empty">No posts yet. ${currentUser && ['dev','mod','admin'].includes(currentUser.role) ? 'Be the first to post!' : 'Check back soon.'}</div>`;
+  const posts = (await Promise.all(ids.map(k=>sget(k)))).filter(Boolean).sort((a,b)=>b.createdAt-a.createdAt);
+  return `<div class="panel-title" style="border:none; margin-bottom:16px;">Community Feed</div>` +
+    posts.map(p=>`
+      <div class="post" onclick="go('post','${p.id}')">
+        <div class="post-meta">
+          <span class="cat-tag cat-${p.category}">${p.category}</span>
+          <span>by ${esc(p.author)}</span>
+          <span>· ${timeAgo(p.createdAt)}</span>
+        </div>
+        <h3>${esc(p.title)}</h3>
+        <div class="post-body">${esc(p.body).slice(0,180)}${p.body.length>180?'…':''}</div>
+      </div>
+    `).join('');
+}
+
+function renderNewPost(){
+  if(!['dev','mod','admin'].includes(currentUser.role)){
+    return `<div class="empty">Only devs, mods, and admins can publish posts.<br>Want to help out? <span class="btn small" style="cursor:pointer;" onclick="go('apply')">Apply for a role</span></div>`;
+  }
+  return `
+  <div class="panel">
+    <div class="panel-title">New Post</div>
+    <label>Category</label>
+    <select id="np-cat">
+      <option value="devlog">Devlog</option>
+      <option value="announcement">Announcement</option>
+      <option value="general">General</option>
+    </select>
+    <label>Title</label>
+    <input type="text" id="np-title" placeholder="What's this post about?">
+    <label>Body</label>
+    <textarea id="np-body" placeholder="Write your post…"></textarea>
+    <div class="btn-row" style="justify-content:flex-start; margin-top:20px;">
+      <div class="btn" onclick="submitPost()">Publish</div>
+    </div>
+    <div class="msg" id="np-msg"></div>
+  </div>`;
+}
+async function submitPost(){
+  const cat = document.getElementById('np-cat').value;
+  const title = document.getElementById('np-title').value.trim();
+  const body = document.getElementById('np-body').value.trim();
+  const msg = document.getElementById('np-msg');
+  if(!title || !body){ msg.className='msg show err'; msg.textContent='Title and body are required.'; return; }
+  const id = 'p'+Date.now()+Math.floor(Math.random()*1000);
+  const post = {id, title, body, category:cat, author:currentUser.username, createdAt:Date.now()};
+  await sset('post:'+id, post);
+  go('post', id);
+}
+
+async function renderPostDetail(id){
+  const post = await sget('post:'+id);
+  if(!post) return `<div class="empty">Post not found.</div>`;
+  const comments = await sget('comments:'+id) || [];
+  const canModerate = currentUser && ['mod','admin'].includes(currentUser.role);
+  return `
+  <div class="back-link" onclick="go('feed')">← Back to Feed</div>
+  <div class="panel">
+    <div class="post-meta">
+      <span class="cat-tag cat-${post.category}">${post.category}</span>
+      <span>by ${esc(post.author)}</span>
+      <span>· ${timeAgo(post.createdAt)}</span>
+    </div>
+    <h2 style="font-size:26px; margin-bottom:14px;">${esc(post.title)}</h2>
+    <div class="post-body" style="color:var(--text); white-space:pre-wrap;">${esc(post.body)}</div>
+    ${canModerate ? `<div class="btn-row" style="justify-content:flex-start; margin-top:18px;">
+      <div class="btn small danger" onclick="deletePost('${post.id}')">Delete Post</div></div>` : ''}
+  </div>
+  <div class="panel">
+    <div class="panel-title">Comments (${comments.length})</div>
+    ${currentUser ? `
+      <textarea id="cm-body" placeholder="Add a comment…" style="min-height:70px;"></textarea>
+      <div class="btn-row" style="justify-content:flex-start; margin-top:10px;">
+        <div class="btn small" onclick="submitComment('${post.id}')">Comment</div>
+      </div>
+      <div class="msg" id="cm-msg"></div>
+    ` : `<div class="empty" style="padding:16px;">Log in to comment.</div>`}
+    ${comments.length ? comments.slice().reverse().map((c,i)=>`
+      <div class="comment">
+        <div class="comment-meta">${esc(c.author)} · ${timeAgo(c.createdAt)}
+          ${canModerate ? ` · <a onclick="deleteComment('${post.id}',${comments.length-1-i})" style="color:var(--danger); cursor:pointer;">delete</a>` : ''}
+        </div>
+        <div class="comment-body">${esc(c.body)}</div>
+      </div>
+    `).join('') : ''}
+  </div>`;
+}
+async function submitComment(postId){
+  const body = document.getElementById('cm-body').value.trim();
+  const msg = document.getElementById('cm-msg');
+  if(!body){ msg.className='msg show err'; msg.textContent='Comment cannot be empty.'; return; }
+  const comments = await sget('comments:'+postId) || [];
+  comments.push({author: currentUser.username, body, createdAt: Date.now()});
+  await sset('comments:'+postId, comments);
+  go('post', postId);
+}
+async function deleteComment(postId, idx){
+  const comments = await sget('comments:'+postId) || [];
+  comments.splice(idx,1);
+  await sset('comments:'+postId, comments);
+  go('post', postId);
+}
+async function deletePost(id){
+  await sdel('post:'+id);
+  await sdel('comments:'+id);
+  go('feed');
+}
+
+/* ---------------- APPLY ---------------- */
+async function renderApply(){
+  const myApp = await sget('application:'+currentUser.username.toLowerCase());
+  const availableRoles = ['playtester','dev','mod'].filter(r => currentUser.role !== r && currentUser.role !== 'admin');
+  if(currentUser.role === 'admin'){
+    return `<div class="empty">You're already an admin — no need to apply for anything!</div>`;
+  }
+  let statusBlock = '';
+  if(myApp){
+    statusBlock = `
+    <div class="panel">
+      <div class="panel-title">Your Application</div>
+      <p style="font-size:13px; color:var(--text-dim);">
+        Role requested: <strong style="color:var(--text);">${esc(myApp.role)}</strong><br>
+        Status: <span class="status-${myApp.status}">${myApp.status}</span><br>
+        Submitted ${timeAgo(myApp.createdAt)}
+      </p>
+      ${myApp.status==='pending' ? `<div class="btn-row" style="justify-content:flex-start;"><div class="btn small ghost" onclick="withdrawApplication()">Withdraw</div></div>` : ''}
+    </div>`;
+  }
+  return `
+    ${statusBlock}
+    ${(!myApp || myApp.status==='rejected') ? `
+    <div class="panel form-narrow" style="max-width:520px;">
+      <div class="panel-title">Apply for a Role</div>
+      <label>Role</label>
+      <select id="ap-role">
+        ${['playtester','dev','mod'].map(r=>`<option value="${r}">${r}</option>`).join('')}
+      </select>
+      <label>Why do you want this role?</label>
+      <textarea id="ap-msg" placeholder="Tell us about your experience / interest…"></textarea>
+      <div class="btn-row" style="justify-content:flex-start; margin-top:16px;">
+        <div class="btn" onclick="submitApplication()">Submit Application</div>
+      </div>
+      <div class="msg" id="ap-fmsg"></div>
+    </div>` : ''}
+  `;
+}
+async function submitApplication(){
+  const role = document.getElementById('ap-role').value;
+  const message = document.getElementById('ap-msg').value.trim();
+  const msg = document.getElementById('ap-fmsg');
+  if(!message){ msg.className='msg show err'; msg.textContent='Please tell us a bit about why you want this role.'; return; }
+  const app = {username: currentUser.username, role, message, status:'pending', createdAt: Date.now()};
+  await sset('application:'+currentUser.username.toLowerCase(), app);
+  go('apply');
+}
+async function withdrawApplication(){
+  await sdel('application:'+currentUser.username.toLowerCase());
+  go('apply');
+}
+
+/* ---------------- SETTINGS ---------------- */
+function renderSettings(){
+  return `
+  <div class="panel form-narrow">
+    <div class="panel-title">Account Settings</div>
+    <label>Username</label>
+    <input type="text" value="${esc(currentUser.username)}" disabled>
+    <label>Role</label>
+    <input type="text" value="${esc(currentUser.role)}" disabled>
+    <label>New Password</label>
+    <input type="password" id="st-newpass" placeholder="Leave blank to keep current password">
+    <div class="btn-row" style="margin-top:18px;">
+      <div class="btn" style="width:100%; text-align:center;" onclick="submitSettings()">Save Changes</div>
+    </div>
+    <div class="msg" id="st-msg"></div>
+  </div>`;
+}
+async function submitSettings(){
+  const newpass = document.getElementById('st-newpass').value;
+  const msg = document.getElementById('st-msg');
+  if(!newpass){ msg.className='msg show ok'; msg.textContent='Nothing changed.'; return; }
+  if(newpass.length<4){ msg.className='msg show err'; msg.textContent='Password must be at least 4 characters.'; return; }
+  const u = await sget('user:'+currentUser.username.toLowerCase());
+  u.passwordHash = await hash(newpass);
+  await sset('user:'+currentUser.username.toLowerCase(), u);
+  msg.className='msg show ok'; msg.textContent='Password updated.';
+}
+
+/* ---------------- ADMIN ---------------- */
+let adminTab = 'applications';
+async function renderAdmin(){
+  const tabs = ['applications','users','posts'];
+  let body = '';
+  if(adminTab==='applications') body = await renderAdminApplications();
+  if(adminTab==='users') body = await renderAdminUsers();
+  if(adminTab==='posts') body = await renderAdminPosts();
+  return `
+  <div class="panel-title" style="border:none;">Admin Panel</div>
+  <div class="tab-row">
+    ${tabs.map(t=>`<div class="tab ${adminTab===t?'active':''}" onclick="switchAdminTab('${t}')">${t}</div>`).join('')}
+  </div>
+  ${body}`;
+}
+function switchAdminTab(t){ adminTab=t; render(); }
+
+async function renderAdminApplications(){
+  const keys = await slist('application:');
+  const apps = (await Promise.all(keys.map(k=>sget(k)))).filter(Boolean).sort((a,b)=>b.createdAt-a.createdAt);
+  if(!apps.length) return `<div class="empty">No applications yet.</div>`;
+  return `<div class="panel"><table>
+    <tr><th>User</th><th>Role</th><th>Message</th><th>Status</th><th></th></tr>
+    ${apps.map(a=>`
+      <tr>
+        <td>${esc(a.username)}</td>
+        <td>${esc(a.role)}</td>
+        <td style="max-width:220px; color:var(--text-dim);">${esc(a.message).slice(0,80)}${a.message.length>80?'…':''}</td>
+        <td class="status-${a.status}">${a.status}</td>
+        <td>
+          ${a.status==='pending' ? `
+            <div class="btn small" style="margin-bottom:4px;" onclick="approveApplication('${a.username}')">Approve</div>
+            <div class="btn small danger" onclick="rejectApplication('${a.username}')">Reject</div>
+          ` : '—'}
+        </td>
+      </tr>
+    `).join('')}
+  </table></div>`;
+}
+async function approveApplication(username){
+  const app = await sget('application:'+username.toLowerCase());
+  const u = await sget('user:'+username.toLowerCase());
+  if(app && u){
+    app.status='approved'; u.role = app.role;
+    await sset('application:'+username.toLowerCase(), app);
+    await sset('user:'+username.toLowerCase(), u);
+    if(currentUser.username.toLowerCase()===username.toLowerCase()) currentUser.role = u.role;
+  }
+  render();
+}
+async function rejectApplication(username){
+  const app = await sget('application:'+username.toLowerCase());
+  if(app){ app.status='rejected'; await sset('application:'+username.toLowerCase(), app); }
+  render();
+}
+
+async function renderAdminUsers(){
+  const keys = await slist('user:');
+  const users = (await Promise.all(keys.map(k=>sget(k)))).filter(Boolean).sort((a,b)=>a.joined-b.joined);
+  return `<div class="panel"><table>
+    <tr><th>Username</th><th>Role</th><th>Joined</th><th>Change Role</th></tr>
+    ${users.map(u=>`
+      <tr>
+        <td>${esc(u.username)}</td>
+        <td><span class="role-pill role-${u.role}">${u.role}</span></td>
+        <td>${timeAgo(u.joined)}</td>
+        <td>
+          <select onchange="changeUserRole('${u.username}', this.value)" style="width:auto; padding:5px 8px; font-size:12px;">
+            ${['user','playtester','dev','mod','admin'].map(r=>`<option value="${r}" ${r===u.role?'selected':''}>${r}</option>`).join('')}
+          </select>
+        </td>
+      </tr>
+    `).join('')}
+  </table></div>`;
+}
+async function changeUserRole(username, role){
+  const u = await sget('user:'+username.toLowerCase());
+  if(u){ u.role = role; await sset('user:'+username.toLowerCase(), u); }
+  if(currentUser.username.toLowerCase()===username.toLowerCase()) currentUser.role = role;
+  render();
+}
+
+async function renderAdminPosts(){
+  const keys = await slist('post:');
+  const posts = (await Promise.all(keys.map(k=>sget(k)))).filter(Boolean).sort((a,b)=>b.createdAt-a.createdAt);
+  if(!posts.length) return `<div class="empty">No posts yet.</div>`;
+  return `<div class="panel"><table>
+    <tr><th>Title</th><th>Author</th><th>Category</th><th>Posted</th><th></th></tr>
+    ${posts.map(p=>`
+      <tr>
+        <td>${esc(p.title)}</td><td>${esc(p.author)}</td><td>${esc(p.category)}</td><td>${timeAgo(p.createdAt)}</td>
+        <td><div class="btn small danger" onclick="deletePost('${p.id}')">Delete</div></td>
+      </tr>
+    `).join('')}
+  </table></div>`;
+}
+
+/* ---------------- INIT ---------------- */
+render();
+</script>
+</body>
+</html>
