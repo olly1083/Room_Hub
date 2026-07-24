@@ -211,13 +211,13 @@ let currentUser = null; // {username, role}
 let view = 'home';
 let viewParam = null;
 
-/* ---------------- GITHUB STORAGE ----------------
-   The browser talks to a Cloudflare Worker. The Worker keeps the GitHub
-   token secret and reads/writes JSON files in the Room_Hub repository.
----------------------------------------------------- */
-const API_BASE = 'https://cold-tooth-93a7.oawwillis.workers.dev';
+/* ---------------- GITHUB STORAGE ---------------- */
+
+const API_BASE =
+  "https://cold-tooth-93a7.oawwillis.workers.dev";
 
 async function apiRequest(path, options = {}) {
+
   const response = await fetch(
     API_BASE + path,
     {
@@ -230,11 +230,23 @@ async function apiRequest(path, options = {}) {
     }
   );
 
-  const data = await response.json().catch(() => null);
+  const data =
+    await response.json().catch(() => null);
 
   if (!response.ok) {
+
+    // A missing file is normal for new users,
+    // comments, applications, and other data.
+    if (
+      response.status === 404 &&
+      options.method !== "PUT"
+    ) {
+      return null;
+    }
+
     throw new Error(
-      data?.error || `API error ${response.status}`
+      data?.error ||
+      `API error ${response.status}`
     );
   }
 
@@ -242,18 +254,20 @@ async function apiRequest(path, options = {}) {
 }
 
 async function sget(key) {
-  try {
-    const data = await apiRequest(
-      "/data/" + encodeURIComponent(key)
-    );
 
-    return data.value ?? null;
+  try {
+
+    const data =
+      await apiRequest(
+        "/data/" +
+        encodeURIComponent(key)
+      );
+
+    return data
+      ? data.value
+      : null;
 
   } catch (error) {
-
-    if (error.message.includes("Not found")) {
-      return null;
-    }
 
     console.error(
       "Failed to get data:",
@@ -265,10 +279,12 @@ async function sget(key) {
 }
 
 async function sset(key, value) {
+
   try {
 
     return await apiRequest(
-      "/data/" + encodeURIComponent(key),
+      "/data/" +
+      encodeURIComponent(key),
       {
         method: "PUT",
 
@@ -290,10 +306,12 @@ async function sset(key, value) {
 }
 
 async function sdel(key) {
+
   try {
 
     return await apiRequest(
-      "/data/" + encodeURIComponent(key),
+      "/data/" +
+      encodeURIComponent(key),
       {
         method: "DELETE"
       }
@@ -311,14 +329,16 @@ async function sdel(key) {
 }
 
 async function slist(prefix) {
+
   try {
 
-    const data = await apiRequest(
-      "/list?prefix=" +
-      encodeURIComponent(prefix)
-    );
+    const data =
+      await apiRequest(
+        "/list?prefix=" +
+        encodeURIComponent(prefix)
+      );
 
-    return data.keys || [];
+    return data?.keys || [];
 
   } catch (error) {
 
@@ -330,7 +350,6 @@ async function slist(prefix) {
     return [];
   }
 }
-
 async function hash(str){
   const enc = new TextEncoder().encode(str);
   const buf = await crypto.subtle.digest('SHA-256', enc);
